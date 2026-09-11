@@ -1,0 +1,56 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.37411.7
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SerialController.Wpf.Controls", "SerialController.Wpf.Controls\SerialController.Wpf.Controls.csproj", "{7947DB98-166A-453E-BD4A-69BC510B5C4C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SerialController.Abstractions", "SerialController.Abstractions\SerialController.Abstractions.csproj", "{399E2498-C469-4CC9-A04F-D60CAEA39AF2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SerialController.Core", "SerialController.Core\SerialController.Core.csproj", "{FB2046AD-CF54-4802-9A39-DB13FD491787}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SerialController.Protocols.NModbus", "SerialController.Protocols.NModbus\SerialController.Protocols.NModbus.csproj", "{50A55256-C129-487A-941A-68333DC7B4F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SwallowBase_DLL", "..\SwallowBase\SwallowBase_DLL\SwallowBase_DLL.csproj", "{7EFD9EE6-B92A-5104-8584-4A26A6CCDA2C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "方案項目", "方案項目", "{8DDC4786-5FC8-F15C-1CA5-9F41FD4BEB75}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7947DB98-166A-453E-BD4A-69BC510B5C4C}.Debug|x64.ActiveCfg = Debug|x64
+		{7947DB98-166A-453E-BD4A-69BC510B5C4C}.Debug|x64.Build.0 = Debug|x64
+		{7947DB98-166A-453E-BD4A-69BC510B5C4C}.Release|x64.ActiveCfg = Release|x64
+		{7947DB98-166A-453E-BD4A-69BC510B5C4C}.Release|x64.Build.0 = Release|x64
+		{399E2498-C469-4CC9-A04F-D60CAEA39AF2}.Debug|x64.ActiveCfg = Debug|x64
+		{399E2498-C469-4CC9-A04F-D60CAEA39AF2}.Debug|x64.Build.0 = Debug|x64
+		{399E2498-C469-4CC9-A04F-D60CAEA39AF2}.Release|x64.ActiveCfg = Release|x64
+		{399E2498-C469-4CC9-A04F-D60CAEA39AF2}.Release|x64.Build.0 = Release|x64
+		{FB2046AD-CF54-4802-9A39-DB13FD491787}.Debug|x64.ActiveCfg = Debug|x64
+		{FB2046AD-CF54-4802-9A39-DB13FD491787}.Debug|x64.Build.0 = Debug|x64
+		{FB2046AD-CF54-4802-9A39-DB13FD491787}.Release|x64.ActiveCfg = Release|x64
+		{FB2046AD-CF54-4802-9A39-DB13FD491787}.Release|x64.Build.0 = Release|x64
+		{50A55256-C129-487A-941A-68333DC7B4F3}.Debug|x64.ActiveCfg = Debug|x64
+		{50A55256-C129-487A-941A-68333DC7B4F3}.Debug|x64.Build.0 = Debug|x64
+		{50A55256-C129-487A-941A-68333DC7B4F3}.Release|x64.ActiveCfg = Release|x64
+		{50A55256-C129-487A-941A-68333DC7B4F3}.Release|x64.Build.0 = Release|x64
+		{7EFD9EE6-B92A-5104-8584-4A26A6CCDA2C}.Debug|x64.ActiveCfg = Debug|x64
+		{7EFD9EE6-B92A-5104-8584-4A26A6CCDA2C}.Debug|x64.Build.0 = Debug|x64
+		{7EFD9EE6-B92A-5104-8584-4A26A6CCDA2C}.Release|x64.ActiveCfg = Release|x64
+		{7EFD9EE6-B92A-5104-8584-4A26A6CCDA2C}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2C603E0F-183A-471A-9884-8A219415C793}
+	EndGlobalSection
+EndGlobal

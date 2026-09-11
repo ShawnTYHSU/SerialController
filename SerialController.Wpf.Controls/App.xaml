@@ -1,0 +1,16 @@
+﻿<Application x:Class="SerialController.Wpf.Controls.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:SerialController.Wpf.Controls"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/SwallowBase_DLL;component/Theme/Colors.xaml"/>
+                <ResourceDictionary Source="/SwallowBase_DLL;component/Theme/Images.xaml"/>
+                <ResourceDictionary Source="/SwallowBase_DLL;component/Theme/Fonts.xaml"/>
+                <ResourceDictionary Source="/SwallowBase_DLL;component/Theme/Controls.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

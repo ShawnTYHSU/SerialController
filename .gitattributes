@@ -1,0 +1,20 @@
+# 統一換行符號處理：避免不同開發者/作業系統造成整批檔案「假性修改」
+# （明明沒改內容，git diff 卻顯示整個檔案都變了，通常就是換行符號不一致造成的）
+
+* text=auto
+
+*.cs text diff=csharp
+*.xaml text
+*.csproj text
+*.sln text eol=crlf
+*.md text
+*.json text
+*.yaml text
+*.yml text
+
+# 圖片等二進位檔案不要讓 git 嘗試轉換行尾
+*.png binary
+*.jpg binary
+*.ico binary
+*.dll binary
+*.pdb binary
