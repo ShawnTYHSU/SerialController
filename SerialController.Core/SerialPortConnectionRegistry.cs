@@ -14,21 +14,28 @@ namespace SerialController.Core;
 /// 依賴 <see cref="ISerialPortConnectionFactory"/>（不是具體的
 /// <c>SerialController.Protocols.NModbus.SerialPortConnection</c> 實作），遵守本系列專案的
 /// 依賴方向規則——Core 不能依賴 Protocols.&lt;Impl&gt;。
+///
+/// 「具名清單、依序連線、移除先 Dispose」這套共用行為本身在 <see cref="DeviceRegistry{TDevice}"/>
+/// 基底類別（見 <see cref="ModbusSerialDeviceRegistry"/> 的另一個特化），這裡只放原始序列連線
+/// 專屬的公開 API 形狀跟命名。
 /// </summary>
-public sealed class SerialPortConnectionRegistry : IAsyncDisposable
+public sealed class SerialPortConnectionRegistry : DeviceRegistry<ISerialPortConnection>
 {
     private readonly ISerialPortConnectionFactory _factory;
-    private readonly Dictionary<string, ISerialPortConnection> _connections = new();
 
-    public SerialPortConnectionRegistry(ISerialPortConnectionFactory factory) => _factory = factory;
+    public SerialPortConnectionRegistry(ISerialPortConnectionFactory factory)
+        : base((connection, token) => connection.OpenAsync(token))
+    {
+        _factory = factory;
+    }
 
     /// <summary>目前註冊的全部連線，唯讀快照（<see cref="Dictionary{TKey,TValue}.Values"/>
     /// 的存活集合，不是複製一份，呼叫端不應該長期持有這個集合的參照）。</summary>
-    public IReadOnlyCollection<ISerialPortConnection> Connections => _connections.Values;
+    public IReadOnlyCollection<ISerialPortConnection> Connections => Items;
 
     /// <summary>依名稱查詢單一連線，找不到回傳 null（不拋例外，理由同
     /// <see cref="ModbusSerialDeviceRegistry.TryGetDevice"/>）。</summary>
-    public ISerialPortConnection? TryGetConnection(string name) => _connections.GetValueOrDefault(name);
+    public ISerialPortConnection? TryGetConnection(string name) => TryGet(name);
 
     /// <summary>
     /// 新增一筆裝置設定並建立（但不連線）對應的物件。<paramref name="name"/> 必須是這個
@@ -36,44 +43,9 @@ public sealed class SerialPortConnectionRegistry : IAsyncDisposable
     /// <see cref="ModbusSerialDeviceRegistry.AddDevice"/>。
     /// </summary>
     public ISerialPortConnection AddConnection(string name, SerialPortConfig config)
-    {
-        if (_connections.ContainsKey(name))
-        {
-            throw new ArgumentException($"裝置名稱「{name}」已經存在，不能重複新增，請先移除舊的或改用其他名稱。", nameof(name));
-        }
-
-        ISerialPortConnection connection = _factory.Create(config);
-        _connections[name] = connection;
-        return connection;
-    }
+        => Add(name, () => _factory.Create(config), nameof(name));
 
     /// <summary>移除一筆裝置——連線會先關閉才從清單移除，理由同
     /// <see cref="ModbusSerialDeviceRegistry.RemoveDeviceAsync"/>。</summary>
-    public async Task RemoveConnectionAsync(string name)
-    {
-        if (_connections.Remove(name, out ISerialPortConnection? connection))
-        {
-            await connection.DisposeAsync().ConfigureAwait(false);
-        }
-    }
-
-    /// <summary>依序連線目前註冊的所有裝置，理由同
-    /// <see cref="ModbusSerialDeviceRegistry.ConnectAllAsync"/>（刻意依序、個別失敗不中斷）。</summary>
-    public async Task ConnectAllAsync(CancellationToken token = default)
-    {
-        foreach (ISerialPortConnection connection in _connections.Values)
-        {
-            await connection.OpenAsync(token).ConfigureAwait(false);
-        }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        foreach (ISerialPortConnection connection in _connections.Values)
-        {
-            await connection.DisposeAsync().ConfigureAwait(false);
-        }
-
-        _connections.Clear();
-    }
+    public Task RemoveConnectionAsync(string name) => RemoveAsync(name);
 }

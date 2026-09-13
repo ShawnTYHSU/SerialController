@@ -1,5 +1,4 @@
 using System.IO.Ports;
-using SerialController.Abstractions.Enums;
 using SerialController.Abstractions.Interfaces;
 using SerialController.Abstractions.Models;
 
@@ -30,34 +29,15 @@ public sealed class SerialPortConnection : ISerialPortConnection
 
     public Task<bool> OpenAsync(CancellationToken token = default)
     {
-        if (string.IsNullOrWhiteSpace(_config.PortName))
+        if (!SerialPortFactory.TryOpen(_config, out SerialPort? port, out string? error))
         {
-            // 明確擋在真正嘗試開啟之前，理由同 ModbusSerialDevice.ConnectAsync——不擋的話
-            // SerialPort.Open() 對空字串丟出的例外不容易一眼看懂是「沒設定埠名」。
-            LastError = "尚未設定序列埠名稱";
+            LastError = error;
             return Task.FromResult(false);
         }
 
-        try
-        {
-            var port = new SerialPort(_config.PortName, _config.BaudRate, ToParity(_config.Parity), _config.DataBits, ToStopBits(_config.StopBits))
-            {
-                ReadTimeout = _config.ReadTimeoutMs,
-                WriteTimeout = _config.WriteTimeoutMs,
-            };
-            port.Open();
-            _port = port;
-            LastError = null;
-            return Task.FromResult(true);
-        }
-        catch (Exception ex)
-        {
-            // 開啟失敗不拋例外（埠名打錯、埠被其他程式佔用、裝置未接上都是現場常態），
-            // 理由同 IAdamIoModule.ConnectAsync 文件註解。
-            LastError = ex.Message;
-            Close();
-            return Task.FromResult(false);
-        }
+        _port = port;
+        LastError = null;
+        return Task.FromResult(true);
     }
 
     public void Close()
@@ -90,24 +70,6 @@ public sealed class SerialPortConnection : ISerialPortConnection
 
         return _port;
     }
-
-    private static Parity ToParity(SerialParity parity) => parity switch
-    {
-        SerialParity.None => Parity.None,
-        SerialParity.Odd => Parity.Odd,
-        SerialParity.Even => Parity.Even,
-        SerialParity.Mark => Parity.Mark,
-        SerialParity.Space => Parity.Space,
-        _ => throw new ArgumentOutOfRangeException(nameof(parity), parity, "未知的同位檢查設定"),
-    };
-
-    private static StopBits ToStopBits(SerialStopBits stopBits) => stopBits switch
-    {
-        SerialStopBits.One => StopBits.One,
-        SerialStopBits.OnePointFive => StopBits.OnePointFive,
-        SerialStopBits.Two => StopBits.Two,
-        _ => throw new ArgumentOutOfRangeException(nameof(stopBits), stopBits, "未知的停止位元設定"),
-    };
 
     public ValueTask DisposeAsync()
     {

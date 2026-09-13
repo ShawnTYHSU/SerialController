@@ -66,6 +66,41 @@
 
 ---
 
+## 2026-09-14 架構深化：收斂兩處重複（`/improve-codebase-architecture`）
+
+透過 `/improve-codebase-architecture` 深化流程（探索→候選報告→逐輪確認設計→實作→`dotnet build` 驗證）
+處理了兩項重複。這個 repo 還很年輕（探索當下總原始碼約 1000 行），沒有大規模 churn，所以直接讀完
+全部原始碼找候選，沒有動用探索用的 sub-agent。
+
+**候選 1：`ModbusSerialDeviceRegistry`/`SerialPortConnectionRegistry` 收斂成共用基底**。
+兩個類別原本逐行複製同一套「具名清單、依序連線、移除先 Dispose」邏輯（連文件註解都互相承認
+「完全同一種模式」）。新增 `SerialController.Core/DeviceRegistry.cs`（`public abstract class
+DeviceRegistry<TDevice>`——技術上必須是 `public`，因為 C# 不允許 `public` 類別繼承存取範圍更小的
+基底類別，但除了本來就公開的 `ConnectAllAsync`/`DisposeAsync`，其餘成員都是 `protected`，不是新增
+對外面），兩個具體類別改成薄委派。**兩邊既有的公開 API 形狀（`Devices`/`Connections`、
+`AddDevice(config)`/`AddConnection(name, config)`、`TryGetDevice`/`TryGetConnection`……）完全不變**——
+這是跟使用者確認過的決定：這次深化只收斂「同一套邏輯只寫一次」，不順便統一兩個 config 的欄位設計
+（`SerialPortConfig` 沒有 `Name` 欄位，`ModbusSerialDeviceConfig` 有，這是不同層次的決定）。
+
+**候選 2：`ModbusSerialDevice`/`SerialPortConnection` 收斂開埠邏輯**。這兩個類別的
+`ToParity`/`ToStopBits` 列舉轉換方法原本逐字重複，`SerialPort` 建構+設定逾時+`Open()`+
+try/catch 失敗處理也幾乎一致。新增 `SerialController.Protocols.NModbus/SerialPortFactory.cs`
+（`internal static class`，`TryOpen(SerialPortConfig, out SerialPort?, out string?)` +
+`ToParity`/`ToStopBits`），兩個類別都改呼叫它。**附帶修正一個小 bug**：舊版 `ModbusSerialDevice.
+ConnectAsync` 如果 `SerialPort` 已經開成功、但接下來 NModbus master 建立失敗（理論上少見），
+catch 區塊呼叫 `Disconnect()` 其實沒有真的釋放剛開好的埠——因為 `_serialPort` 欄位要等連線完全
+成功才賦值，那個分支呼叫 `Disconnect()` 等於對 null 欄位操作。抽出 `SerialPortFactory.TryOpen`
+後，這個分支自然變成直接 `serialPort.Close()`/`Dispose()` 剛拿到的本地變數，這個修正是抽取的
+自然結果，不是刻意額外去抓的 bug。
+
+**驗證結果**：`SerialController.sln`／`EIBG_Assemble.sln` 皆 `dotnet build` 0 警告 0 錯誤。
+⚠️ 這個 repo 目前沒有測試專案（見下方待辦事項 2），也沒有任何消費端在用這兩個 Registry/裝置類別
+（`EIBG_Assemble.sln` 雖然把四個專案列進方案，但目前沒有任何 `ProjectReference` 真的指向它們），
+所以這次深化的驗證只到「編譯通過、公開簽章不變」，無法用真實呼叫行為或單元測試進一步佐證——
+之後真的接上消費端或補上測試專案時，值得針對 `DeviceRegistry<TDevice>`（重複名稱拋例外、移除前
+Dispose、依序連線個別失敗不中斷）跟 `SerialPortFactory.TryOpen`（PortName 空白/裝置未上電的
+fail-closed 行為）補上回歸測試。
+
 ## 待辦事項
 
 1. 🔴 **實機驗證 NModbus RTU/ASCII 通訊**——目前完全沒有測過。第一次接
