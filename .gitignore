@@ -92,3 +92,7 @@ local.settings.json
 *.flv
 *.mov
 *.wmv
+
+# --- SKILL產物 ----
+improve-codebase-architecture_files/
+improve-codebase-architecture.html
